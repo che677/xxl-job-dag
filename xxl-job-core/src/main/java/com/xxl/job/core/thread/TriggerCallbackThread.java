@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class TriggerCallbackThread {
     private static Logger logger = LoggerFactory.getLogger(TriggerCallbackThread.class);
-
+    // 单例模式，获取实例
     private static TriggerCallbackThread instance = new TriggerCallbackThread();
     public static TriggerCallbackThread getInstance(){
         return instance;
@@ -63,6 +63,7 @@ public class TriggerCallbackThread {
                 // normal callback
                 while(!toStop){
                     try {
+                        // 这里可以阻塞获取结果，因为唯一的作用就是获取callback并执行，而且不需要监测变量的取值
                         HandleCallbackParam callback = getInstance().callBackQueue.take();
                         if (callback != null) {
 
