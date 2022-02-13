@@ -123,12 +123,13 @@ public class JobThread extends Thread{
 							triggerParam.getBroadcastIndex(),
 							triggerParam.getBroadcastTotal());
 
-					// init job context
+					// init job context 运用了threadlocal，将当前线程赋予参数并执行
 					XxlJobContext.setXxlJobContext(xxlJobContext);
 
 					// execute
 					XxlJobHelper.log("<br>----------- xxl-job job execute start -----------<br>----------- Param:" + xxlJobContext.getJobParam());
 
+					// 如果设置了超时时间
 					if (triggerParam.getExecutorTimeout() > 0) {
 						// limit timeout
 						Thread futureThread = null;
@@ -159,7 +160,7 @@ public class JobThread extends Thread{
 							futureThread.interrupt();
 						}
 					} else {
-						// just execute
+						// just execute 没设置就直接执行即可
 						handler.execute();
 					}
 

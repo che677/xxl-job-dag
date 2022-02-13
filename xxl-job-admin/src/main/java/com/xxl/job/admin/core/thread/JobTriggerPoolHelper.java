@@ -76,7 +76,8 @@ public class JobTriggerPoolHelper {
                            final String executorParam,
                            final String addressList) {
 
-        // choose thread pool
+        // choose thread pool 默认选择快线程池
+        // 1分钟窗口期内任务耗时达500ms超过10次，该窗口期内判定为慢任务，任务自动降级进入"Slow"线程池，
         ThreadPoolExecutor triggerPool_ = fastTriggerPool;
         AtomicInteger jobTimeoutCount = jobTimeoutCountMap.get(jobId);
         if (jobTimeoutCount!=null && jobTimeoutCount.get() > 10) {      // job-timeout 10 times in 1 min

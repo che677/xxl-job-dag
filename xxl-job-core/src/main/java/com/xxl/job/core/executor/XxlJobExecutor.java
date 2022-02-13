@@ -67,17 +67,17 @@ public class XxlJobExecutor  {
         // init logpath
         XxlJobFileAppender.initLogPath(logPath);
 
-        // init invoker, admin-client
+        // init invoker, admin-client 获取admin的地址与token，方便与admin之间进行通信
         initAdminBizList(adminAddresses, accessToken);
 
 
         // init JobLogFileCleanThread
         JobLogFileCleanThread.getInstance().start(logRetentionDays);
 
-        // init TriggerCallbackThread
+        // init TriggerCallbackThread 触发回调函数线程
         TriggerCallbackThread.getInstance().start();
 
-        // init executor-server
+        // init executor-server 初始化executor自带的server客户端
         initEmbedServer(address, ip, port, appname, accessToken);
     }
     public void destroy(){
@@ -141,7 +141,7 @@ public class XxlJobExecutor  {
         port = port>0?port: NetUtil.findAvailablePort(9999);
         ip = (ip!=null&&ip.trim().length()>0)?ip: IpUtil.getIp();
 
-        // generate address
+        // generate address 产生访问地址
         if (address==null || address.trim().length()==0) {
             String ip_port_address = IpUtil.getIpPort(ip, port);   // registry-address：default use address to registry , otherwise use ip:port if address is null
             address = "http://{ip_port}/".replace("{ip_port}", ip_port_address);
@@ -152,7 +152,7 @@ public class XxlJobExecutor  {
             logger.warn(">>>>>>>>>>> xxl-job accessToken is empty. To ensure system security, please set the accessToken.");
         }
 
-        // start
+        // start 启动server，利用netty注册任务到admin上去，并形成对外暴露的接口
         embedServer = new EmbedServer();
         embedServer.start(address, port, appname, accessToken);
     }

@@ -65,6 +65,7 @@ public class XxlJobRemotingUtil {
         HttpURLConnection connection = null;
         BufferedReader bufferedReader = null;
         try {
+            // 利用http请求的方式实现了远程调用接口
             // connection
             URL realUrl = new URL(url);
             connection = (HttpURLConnection) realUrl.openConnection();

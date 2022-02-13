@@ -34,6 +34,8 @@ public class EmbedServer {
     private Thread thread;
 
     public void start(final String address, final int port, final String appname, final String accessToken) {
+        // ExecutorBizImpl是ExecutorBiz的实现类，负责执行器任务的执行，心跳检测，任务杀死，打印执行日志等功能
+        // 一个执行器（地址+IP）只会有一个ExecutorBiz
         executorBiz = new ExecutorBizImpl();
         thread = new Thread(new Runnable() {
 
@@ -110,6 +112,7 @@ public class EmbedServer {
             }
 
         });
+        // 设置成守护线程，thread跟主线程是一起的，executor初始化完成之后就会停止执行了
         thread.setDaemon(true);	// daemon, service jvm, user thread leave >>> daemon leave >>> jvm leave
         thread.start();
     }
