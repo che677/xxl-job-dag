@@ -2,6 +2,7 @@ package com.xxl.job.admin.core.thread;
 
 import com.xxl.job.admin.core.complete.XxlJobCompleter;
 import com.xxl.job.admin.core.conf.XxlJobAdminConfig;
+import com.xxl.job.admin.core.dag.TaskSet;
 import com.xxl.job.admin.core.model.XxlJobLog;
 import com.xxl.job.admin.core.util.I18nUtil;
 import com.xxl.job.core.biz.model.HandleCallbackParam;
@@ -13,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * job lose-monitor instance
@@ -32,6 +34,13 @@ public class JobCompleteHelper {
 	private ThreadPoolExecutor callbackThreadPool = null;
 	private Thread monitorThread;
 	private volatile boolean toStop = false;
+
+	// ------------------------ DAG -------------------------
+	// 当前任务集执行计数器
+	private static volatile ConcurrentHashMap<Integer, AtomicInteger> countdownMap= new ConcurrentHashMap<>();
+	// 当前任务集仓库
+	private static ConcurrentMap<Integer, TaskSet> taskSetRepository = new ConcurrentHashMap<Integer, TaskSet>();
+
 	public void start(){
 
 		// for callback
@@ -80,17 +89,13 @@ public class JobCompleteHelper {
 
 						if (losedJobIds!=null && losedJobIds.size()>0) {
 							for (Long logId: losedJobIds) {
-
 								XxlJobLog jobLog = new XxlJobLog();
 								jobLog.setId(logId);
-
 								jobLog.setHandleTime(new Date());
 								jobLog.setHandleCode(ReturnT.FAIL_CODE);
 								jobLog.setHandleMsg( I18nUtil.getString("joblog_lost_fail") );
-
 								XxlJobCompleter.updateHandleInfoAndFinish(jobLog);
 							}
-
 						}
 					} catch (Exception e) {
 						if (!toStop) {
@@ -179,6 +184,30 @@ public class JobCompleteHelper {
 		return ReturnT.SUCCESS;
 	}
 
+	// 添加计数值，并添加
+	public void putCount(Integer taskSetId, AtomicInteger count){
+		countdownMap.put(taskSetId, count);
+	}
+	// 删除计数值
+	public void deleteCount(Integer taskSetId){
+		countdownMap.remove(taskSetId);
+	}
+	// 原子减
+	public int decreaseAndGet(Integer taskSetId){
+		return countdownMap.get(taskSetId).decrementAndGet();
+	}
 
+	// 获取运行中的taskset值
+	public void getTaskSet(Integer taskSetId){
+		taskSetRepository.get(taskSetId);
+	}
+	// 删除taskset值
+	public void deleteTaskSet(Integer taskSetId){
+		taskSetRepository.remove(taskSetId);
+	}
+	// 新增taskSet
+	public void addTaskSet(TaskSet taskSet){
+		taskSetRepository.put(taskSet.getId(), taskSet);
+	}
 
 }

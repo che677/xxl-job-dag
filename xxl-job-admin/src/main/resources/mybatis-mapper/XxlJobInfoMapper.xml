@@ -36,6 +36,7 @@
 		<result column="trigger_status" property="triggerStatus" />
 		<result column="trigger_last_time" property="triggerLastTime" />
 		<result column="trigger_next_time" property="triggerNextTime" />
+		<result column="flow_id" property="flowId"/>
 	</resultMap>
 
 	<sql id="Base_Column_List">
@@ -62,7 +63,8 @@
 		t.child_jobid,
 		t.trigger_status,
 		t.trigger_last_time,
-		t.trigger_next_time
+		t.trigger_next_time,
+		t.flow_id
 	</sql>
 
 	<select id="pageList" parameterType="java.util.HashMap" resultMap="XxlJobInfo">

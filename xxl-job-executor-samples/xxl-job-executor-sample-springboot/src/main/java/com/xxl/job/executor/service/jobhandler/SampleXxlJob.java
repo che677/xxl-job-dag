@@ -48,6 +48,12 @@ public class SampleXxlJob {
         // default success
     }
 
+    // 事件触发器
+    @XxlJob("eventHandler")
+    public void eventHandler() throws Exception {
+        log.error("触发事件");
+        // default success
+    }
 
     /**
      * 2、分片广播任务
