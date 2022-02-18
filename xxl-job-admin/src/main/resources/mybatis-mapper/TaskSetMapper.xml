@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xxl.job.admin.dao.TaskSetMapper" >
+  <resultMap id="BaseResultMap" type="com.xxl.job.admin.core.dag.TaskSet" >
+    <result column="id" property="id" jdbcType="VARCHAR" />
+    <result column="next_id" property="nextId" jdbcType="VARCHAR" />
+    <result column="job_id" property="jobId" jdbcType="VARCHAR" />
+    <result column="flow_id" property="flowId" jdbcType="INTEGER"/>
+  </resultMap>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from t_taskset
+    where id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <delete id="deleteByFlowId" parameterType="int" >
+    delete from t_taskset
+    where flow_id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.xxl.job.admin.core.dag.TaskSet" >
+    insert into t_taskset (id, job_id, next_id, flow_id)
+    values (#{id,jdbcType=VARCHAR}, #{jobId,jdbcType=VARCHAR},#{nextId,jdbcType=VARCHAR},#{flowId,jdbcType=INTEGER})
+  </insert>
+  <insert id="batchInsert" parameterType="com.xxl.job.admin.core.dag.TaskSet" >
+    insert into t_taskset (id, job_id, next_id, flow_id)
+    values
+    <foreach collection="record" separator="," item="item">
+      (#{item.id,jdbcType=VARCHAR}, #{item.jobId,jdbcType=VARCHAR},
+      #{item.nextId,jdbcType=VARCHAR},#{item.flowId,jdbcType=INTEGER})
+    </foreach>
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="com.xxl.job.admin.core.dag.TaskSet" >
+    update t_taskset
+    set job_id = #{jobId,jdbcType=VARCHAR},
+      next_id = #{next_id,jdbcType=VARCHAR},
+      flow_id = #{flow_id, jdbcType=INTEGER}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select id, job_id, next_id,flow_id
+    from t_taskset
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select id, job_id, next_id,flow_id
+    from t_taskset
+  </select>
+</mapper>

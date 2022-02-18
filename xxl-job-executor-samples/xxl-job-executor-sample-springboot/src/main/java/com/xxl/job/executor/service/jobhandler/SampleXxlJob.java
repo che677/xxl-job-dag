@@ -5,6 +5,7 @@ import com.xxl.job.core.handler.annotation.XxlJob;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.BufferedInputStream;
@@ -13,7 +14,9 @@ import java.io.DataOutputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -30,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Component
 public class SampleXxlJob {
+
     private static Logger logger = LoggerFactory.getLogger(SampleXxlJob.class);
 
 
@@ -38,21 +42,24 @@ public class SampleXxlJob {
      */
     @XxlJob("demoJobHandler")
     public void demoJobHandler() throws Exception {
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//设置日期格式
+        String startTime = df.format(new Date());
         String command = XxlJobHelper.getJobParam();
         log.error("XXL-JOB, Hello World."+"\n"+command);
-
         for (int i = 0; i < 5; i++) {
             log.error("beat at:" + i);
             TimeUnit.SECONDS.sleep(2);
         }
+        String endTime = df.format(new Date());
+        XxlJobHelper.handleSuccess(startTime+"       "+endTime);
         // default success
     }
 
     // 事件触发器
     @XxlJob("eventHandler")
     public void eventHandler() throws Exception {
-        log.error("触发事件");
-        // default success
+        log.info("开始执行流程编排");
+
     }
 
     /**

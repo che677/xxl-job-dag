@@ -1,6 +1,6 @@
 package com.xxl.job.admin.core.dag;
 
-import com.alice.workbench.model.strategy.Node;
+import com.xxl.job.admin.core.model.XxlJobInfo;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,12 +15,12 @@ import java.util.List;
 @NoArgsConstructor
 public class Flow {
 
-    Long id;
+    Integer id;
     // 节点信息
-    List<Node> nodeList;
+    List<XxlJobInfo> nodeList;
     // 连线信息
     List<Hop> hopList;
     // 定时调度任务ID
-    Long jobId;
+    Integer jobId;
 
 }

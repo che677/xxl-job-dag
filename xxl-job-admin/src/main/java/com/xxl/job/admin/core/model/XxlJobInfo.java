@@ -46,5 +46,14 @@ public class XxlJobInfo {
 	private long triggerNextTime;	// 下次调度时间
 
 	private Integer flowId;
+	private String taskSetId;
+	private Integer inDegree = 0;
 
+	/**
+	 * 更改入度
+	 * @param i
+	 */
+	public void addInDegree(int i){
+		inDegree += i;
+	}
 }

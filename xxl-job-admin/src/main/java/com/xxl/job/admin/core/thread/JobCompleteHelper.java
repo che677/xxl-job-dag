@@ -35,12 +35,6 @@ public class JobCompleteHelper {
 	private Thread monitorThread;
 	private volatile boolean toStop = false;
 
-	// ------------------------ DAG -------------------------
-	// 当前任务集执行计数器
-	private static volatile ConcurrentHashMap<Integer, AtomicInteger> countdownMap= new ConcurrentHashMap<>();
-	// 当前任务集仓库
-	private static ConcurrentMap<Integer, TaskSet> taskSetRepository = new ConcurrentHashMap<Integer, TaskSet>();
-
 	public void start(){
 
 		// for callback
@@ -182,32 +176,6 @@ public class JobCompleteHelper {
 		XxlJobCompleter.updateHandleInfoAndFinish(log);
 
 		return ReturnT.SUCCESS;
-	}
-
-	// 添加计数值，并添加
-	public void putCount(Integer taskSetId, AtomicInteger count){
-		countdownMap.put(taskSetId, count);
-	}
-	// 删除计数值
-	public void deleteCount(Integer taskSetId){
-		countdownMap.remove(taskSetId);
-	}
-	// 原子减
-	public int decreaseAndGet(Integer taskSetId){
-		return countdownMap.get(taskSetId).decrementAndGet();
-	}
-
-	// 获取运行中的taskset值
-	public void getTaskSet(Integer taskSetId){
-		taskSetRepository.get(taskSetId);
-	}
-	// 删除taskset值
-	public void deleteTaskSet(Integer taskSetId){
-		taskSetRepository.remove(taskSetId);
-	}
-	// 新增taskSet
-	public void addTaskSet(TaskSet taskSet){
-		taskSetRepository.put(taskSet.getId(), taskSet);
 	}
 
 }

@@ -34,7 +34,9 @@ public interface XxlJobInfoDao {
 	public XxlJobInfo loadById(@Param("id") int id);
 	
 	public int update(XxlJobInfo xxlJobInfo);
-	
+
+//	public int updateTask(@Param("list") List<XxlJobInfo> list);
+	public int updateTask(@Param("list") XxlJobInfo list);
 	public int delete(@Param("id") long id);
 
 	public List<XxlJobInfo> getJobsByGroup(@Param("jobGroup") int jobGroup);
@@ -45,5 +47,5 @@ public interface XxlJobInfoDao {
 
 	public int scheduleUpdate(XxlJobInfo xxlJobInfo);
 
-
+	public List<XxlJobInfo> getJobsByTaskSet(@Param("tasksetId") String tasksetId);
 }

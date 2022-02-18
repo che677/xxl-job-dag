@@ -258,6 +258,16 @@
 				AND t.trigger_time <![CDATA[ <= ]]> #{losedTime}
 				AND t2.id IS NULL;
 	</select>
+
+	<select id="findFinishJob" resultMap="XxlJobLog">
+		select id, job_id, handle_code
+		from xxl_job_log
+		where job_id = #{jobId}
+		and trigger_time =
+		(select max(trigger_time) from xxl_job_log
+		where job_id = #{jobId})
+		limit 1
+	</select>
 	<!--
 	SELECT t.id
 	FROM xxl_job_log AS t

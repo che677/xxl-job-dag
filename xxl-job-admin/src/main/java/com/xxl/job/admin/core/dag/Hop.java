@@ -14,13 +14,13 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class Hop {
 
-    Long id;
+    Integer id;
 
-    Long flowId;
+    Integer flowId;
 
     // 起始节点
-    Long sourceId;
+    Integer sourceId;
     // 终止节点
-    Long targetId;
+    Integer targetId;
 
 }

@@ -3,14 +3,18 @@ package com.xxl.job.admin.core.conf;
 import com.xxl.job.admin.core.alarm.JobAlarmer;
 import com.xxl.job.admin.core.scheduler.XxlJobScheduler;
 import com.xxl.job.admin.dao.*;
+import com.xxl.job.admin.service.FlowService;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import javax.sql.DataSource;
+import java.io.IOException;
 import java.util.Arrays;
 
 /**
@@ -85,7 +89,12 @@ public class XxlJobAdminConfig implements InitializingBean, DisposableBean {
     private DataSource dataSource;
     @Resource
     private JobAlarmer jobAlarmer;
-
+    @Resource
+    private FlowService flowService;
+    @Resource
+    private TaskSetMapper taskSetMapper;
+    @Autowired
+    private RedissonManager redissonManager;
 
     public String getI18n() {
         if (!Arrays.asList("zh_CN", "zh_TC", "en").contains(i18n)) {
@@ -155,4 +164,9 @@ public class XxlJobAdminConfig implements InitializingBean, DisposableBean {
         return jobAlarmer;
     }
 
+    public FlowService getFlowService(){return flowService;}
+
+    public TaskSetMapper getTaskSetMapper(){return taskSetMapper;}
+
+    public RedissonClient getRedisson() throws IOException {return redissonManager.redisson();}
 }
