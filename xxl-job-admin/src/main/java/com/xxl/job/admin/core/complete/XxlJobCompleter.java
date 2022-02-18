@@ -10,6 +10,7 @@ import com.xxl.job.admin.core.trigger.TriggerTypeEnum;
 import com.xxl.job.admin.core.util.I18nUtil;
 import com.xxl.job.core.biz.model.ReturnT;
 import com.xxl.job.core.context.XxlJobContext;
+import org.redisson.api.RAtomicLong;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
@@ -51,7 +52,7 @@ public class XxlJobCompleter {
         // 1、handle success, to trigger child job
         String triggerChildMsg = null;
         String jobIds = null;
-        RLock lock = null;
+        RAtomicLong atomicLong = null;
         if (XxlJobContext.HANDLE_COCE_SUCCESS == xxlJobLog.getHandleCode()) {
             XxlJobInfo xxlJobInfo = XxlJobAdminConfig.getAdminConfig().getXxlJobInfoDao().loadById(xxlJobLog.getJobId());
             // 链式依赖任务
@@ -85,6 +86,14 @@ public class XxlJobCompleter {
 
             // 这里是任务组的回调函数，执行DAG流程编排任务，并启动后续任务
             if(xxlJobInfo.getFlowId()!=null){
+                RedissonClient redisson = null;
+                try{
+                    redisson = XxlJobAdminConfig.getAdminConfig().getRedisson();
+                    atomicLong = redisson.getAtomicLong("taskset:" + xxlJobInfo.getFlowId());
+                }catch (Exception e){
+                    logger.error("无法添加计数器");
+                    return;
+                }
                 JobCompleteHelper helper = JobCompleteHelper.getInstance();
                 // 如果这里是起始触发节点，直接触发后续依赖任务即可
                 if("eventHandler".equalsIgnoreCase(xxlJobInfo.getExecutorHandler())){
@@ -100,36 +109,26 @@ public class XxlJobCompleter {
                     }
                     String nextId = collect.get(0).getNextId();
                     jobIds = XxlJobAdminConfig.getAdminConfig().getTaskSetMapper().selectByPrimaryKey(nextId).getJobId();
+                    String[] split = jobIds.split(",");
+                    atomicLong.set(split.length);
                 }else{
-                    // 此处先查询状态再更新，需要添加锁来保证原子性，锁的名称为 taskset
-                    String taskSetId = xxlJobInfo.getTaskSetId();
-                    try{
-                        RedissonClient redisson = XxlJobAdminConfig.getAdminConfig().getRedisson();
-                        lock = redisson.getLock("dag:"+taskSetId);
-                        lock.lock(1000, TimeUnit.SECONDS);
-                    }catch (Exception e){
-                        logger.error("加锁失败");
-                    }
-                    // 如果这里是中间节点与末尾节点，先获取任务所在的taskset，看看任务状态是否是都已完成；
-                    // 如果是的话，直接启动下一个taskset的程序
-                    TaskSet taskSet = XxlJobAdminConfig.getAdminConfig().getTaskSetMapper().selectByPrimaryKey(xxlJobInfo.getTaskSetId());
-                    String[] jobIdList = taskSet.getJobId().split(",");
-                    int ifFinished = 1;
-                    for(String s:jobIdList){
-                        // 不考虑自己的执行状态
-                        if(xxlJobInfo.getId() != Integer.valueOf(s)){
-                            // 拿到了正在执行的日志
-                            XxlJobLog finishJob = XxlJobAdminConfig.getAdminConfig().getXxlJobLogDao().findFinishJob(Integer.valueOf(s));
-                            if(ObjectUtils.isEmpty(finishJob) || finishJob.getHandleCode() != 200){
-                                ifFinished = 0;
-                                break;
-                            }
-                        }
-                    }
-                    if(ifFinished == 1){
-                        // 证明本轮任务都完成了，需要触发下一轮操作
+                    // 如果这里是中间节点与末尾节点，先获取当前流程的原子类，看看任务状态是否是都已完成；
+                    long count = atomicLong.decrementAndGet();
+                    if(count == 0){
+                        // 如果是0的话，证明本轮任务完成，直接启动下一个taskset的程序，并添加下一轮的计数器
+                        TaskSet taskSet = XxlJobAdminConfig.getAdminConfig().getTaskSetMapper().selectByPrimaryKey(xxlJobInfo.getTaskSetId());
                         TaskSet nextTaskSet = XxlJobAdminConfig.getAdminConfig().getTaskSetMapper().selectByPrimaryKey(taskSet.getNextId());
                         jobIds = ObjectUtils.isEmpty(nextTaskSet)?null:nextTaskSet.getJobId();
+                        if(!StringUtils.isEmpty(jobIds)){
+                            String[] split = jobIds.split(",");
+                            atomicLong.set(split.length);
+                        }else{
+                            // 下游没有jobIds，证明任务组已经完成任务
+                            atomicLong.delete();
+                        }
+                    }else{
+                        //否则不予处理
+                        jobIds = null;
                     }
                 }
                 // 再触发下游依赖任务，并执行分布式锁解锁
@@ -153,9 +152,6 @@ public class XxlJobCompleter {
 
         // 如果都成功了，再写日志，然后再解锁
         XxlJobAdminConfig.getAdminConfig().getXxlJobLogDao().updateHandleInfo(xxlJobLog);
-        if(null != lock){
-            lock.unlock();
-        }
         // fresh handle
     }
 
