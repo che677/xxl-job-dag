@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xxl.job.workbench.dao.FlowMapper" >
+
+  <update id="cas">
+    update t_flow
+    set job_id = job_id-1
+    where id = #{id} and job_id>0
+  </update>
+
+</mapper>
