@@ -1,11 +1,15 @@
 package com.xxl.job.executor.service.jobhandler;
 
+import com.cloudera.sqoop.SqoopOptions;
 import com.xxl.job.core.context.XxlJobHelper;
 import com.xxl.job.core.handler.annotation.XxlJob;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.sqoop.Sqoop;
+
+import org.apache.sqoop.tool.ImportTool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.BufferedInputStream;
@@ -14,9 +18,12 @@ import java.io.DataOutputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.sql.*;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -265,7 +272,80 @@ public class SampleXxlJob {
         logger.info("destory");
     }
 
+    /**
+     * hive算子
+     */
+    @XxlJob(value="hive")
+    public void hive(){
+        String sql = XxlJobHelper.getJobParam();
+        List<Integer> docIds = new ArrayList<Integer>();
+        try {
+            Class.forName("org.apache.hive.jdbc.HiveDriver");
+            Connection conn = DriverManager.getConnection("jdbc:hive2://localhost:10000/default", "root", "123456");
+            String[] sqlBatch = sql.split(";");
+            Statement stmt = conn.createStatement();
+            for(String s:sqlBatch){
+                stmt.execute(s);
+            }
+            XxlJobHelper.handleSuccess("hive sql执行成功");
+        }catch (Exception e){
+            e.printStackTrace();
+            XxlJobHelper.log(e);
+            XxlJobHelper.handleFail(e.getMessage());
+        }
+    }
 
+    /**
+     * sqoop算子
+     */
+    @XxlJob(value="sqoop")
+    public void sqoop() throws Exception {
+        SqoopOptions options = new SqoopOptions();
+        options.setHadoopMapRedHome("/opt/hadoop-2.9.2");
+        options.setConnectString("jdbc:mysql://localhost:3306/sqoop");
+        //options.setTableName("TABLE_NAME");
+        //options.setWhereClause("id>10");     // this where clause works when importing whole table, ie when setTableName() is used
+        options.setUsername("root");
+        options.setPassword("123456");
+        //options.setDirectMode(true);    // Make sure the direct mode is off when importing data to HBase
+        options.setNumMappers(1);         // Default value is 4
+        options.setSqlQuery("SELECT * FROM goodtbl WHERE $CONDITIONS limit 10");
+//        options.setSplitByCol("log_id");
+        // HBase options
+        options.setHiveDatabaseName("mydb");
+        options.setOverwriteHiveTable(true);
+        options.setHiveTableName("goodtbl");
+        int res = new ImportTool().run(options);
+        if (res == 0) {
+            XxlJobHelper.handleSuccess ("成功");
+        }else {
+            XxlJobHelper.handleFail("失败");
+        }
 
+//        SqoopTool sqoopTool = SqoopTool.getTool("import");
+//        SqoopOptions sqoopOptions = new SqoopOptions();
+//        sqoopOptions.setConnectString("xxx");
+//        sqoopOptions.setUsername("xxx");
+//        sqoopOptions.setPassword("xxx");
+//        sqoopOptions.setNumMappers(1);
+//        sqoopOptions.setNullStringValue("\\\\N");
+//        sqoopOptions.setNullNonStringValue("\\\\N");
+//        sqoopOptions.setFieldsTerminatedBy('\001');
+//        sqoopOptions.setTargetDir("/data/hive/warehouse/ods_cmis.db/ods_" + hiveTableName.toLowerCase());
+//        sqoopOptions.setCodeOutputDir("sqoopjavafile");
+//        sqoopOptions.setJarOutputDir("sqoopcompilefile/" + CommonUtil.getUUID() + "/");
+//        sqoopOptions.setHiveDropDelims(true);
+//        sqoopOptions.setSqlQuery(querySql);
+//        sqoopOptions.setAppendMode(true);
+//        sqoopOptions.setClassName(hiveTableName + CommonUtil.getUUID());
+//        sqoopOptions.setSqlQuery(querySql);
+//        sqoopOptions.setAppendMode(true);
+//        sqoopOptions.setClassName(hiveTableName + CommonUtil.getUUID());
+//        Configuration conf= new Configuration();
+//        conf.set("fs.defaultFS","hdfs://xxx:8020");
+//        Sqoop sqoop = new Sqoop(sqoopTool, SqoopTool.loadPlugins(conf), sqoopOptions);
+//        Sqoop.runSqoop(sqoop, new String[]{});
+
+    }
 
 }
