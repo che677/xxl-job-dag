@@ -4,8 +4,6 @@ import com.cloudera.sqoop.SqoopOptions;
 import com.xxl.job.core.context.XxlJobHelper;
 import com.xxl.job.core.handler.annotation.XxlJob;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.sqoop.Sqoop;
 
 import org.apache.sqoop.tool.ImportTool;
 import org.slf4j.Logger;
@@ -300,51 +298,57 @@ public class SampleXxlJob {
      */
     @XxlJob(value="sqoop")
     public void sqoop() throws Exception {
+        String JOB_NAME = "Sqoop Hive Job";
+        String MAPREDUCE_JOB = "Hive Map Reduce Job";
+        String DBURL ="jdbc:mysql://localhost:3306/sqoop";
+        String DRIVER = "com.mysql.cj.jdbc.Driver";
+        String USERNAME = "root";
+        String PASSWORD = "123456";
+        String HADOOP_HOME ="/opt/hadoop-2.9.2";
+        String JAR_OUTPUT_DIR = "/data";
+        String HIVE_HOME = "/opt/hive-2.7.3";
+        String HIVE_DIR = "/user/hive/warehouse/";
+        String WAREHOUSE_DIR = "hdfs://localhost:9000/user/hive/warehouse/mydb.db";
+        String SUCCESS = "SUCCESS !!!";
+        String FAIL = "FAIL !!!";
+        String table = "goodtbl";
+
         SqoopOptions options = new SqoopOptions();
-        options.setHadoopMapRedHome("/opt/hadoop-2.9.2");
-        options.setConnectString("jdbc:mysql://localhost:3306/sqoop");
-        //options.setTableName("TABLE_NAME");
-        //options.setWhereClause("id>10");     // this where clause works when importing whole table, ie when setTableName() is used
-        options.setUsername("root");
-        options.setPassword("123456");
-        //options.setDirectMode(true);    // Make sure the direct mode is off when importing data to HBase
-        options.setNumMappers(1);         // Default value is 4
-        options.setSqlQuery("SELECT * FROM goodtbl WHERE $CONDITIONS limit 10");
-//        options.setSplitByCol("log_id");
-        // HBase options
-        options.setHiveDatabaseName("mydb");
-        options.setOverwriteHiveTable(true);
+        options.setConnectString(DBURL);
+        options.doOverwriteHiveTable();
+        options.setTableName(table);
+        options.setDriverClassName(DRIVER);
+        options.setUsername(USERNAME);
+        options.setPassword(PASSWORD);
+        options.setHadoopMapRedHome(HADOOP_HOME);
+        /* Hive connection parameters */
+        options.setHiveHome(HIVE_HOME);
+        options.setHiveImport(true);
         options.setHiveTableName("goodtbl");
-        int res = new ImportTool().run(options);
-        if (res == 0) {
-            XxlJobHelper.handleSuccess ("成功");
-        }else {
-            XxlJobHelper.handleFail("失败");
+        options.setOverwriteHiveTable(true);
+        options.setFailIfHiveTableExists(false);
+        //options.setFieldsTerminatedBy(',');
+        options.setDirectMode(true);
+        options.setNumMappers(1); // No. of Mappers to be launched for the job
+        options.setWarehouseDir(WAREHOUSE_DIR);
+        options.setJobName(JOB_NAME);
+        options.setMapreduceJobName(MAPREDUCE_JOB);
+        options.setTableName(table);
+        options.setJarOutputDir(JAR_OUTPUT_DIR);
+        System.out.println("Import Tool running ....");
+        ImportTool it = new ImportTool();
+        try{
+            int retVal = it.run(options);
+            if(retVal == 1){
+                XxlJobHelper.handleSuccess("执行成功");
+            }else{
+                XxlJobHelper.handleFail("执行失败");
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            XxlJobHelper.handleFail("执行失败:  "+e);
         }
 
-//        SqoopTool sqoopTool = SqoopTool.getTool("import");
-//        SqoopOptions sqoopOptions = new SqoopOptions();
-//        sqoopOptions.setConnectString("xxx");
-//        sqoopOptions.setUsername("xxx");
-//        sqoopOptions.setPassword("xxx");
-//        sqoopOptions.setNumMappers(1);
-//        sqoopOptions.setNullStringValue("\\\\N");
-//        sqoopOptions.setNullNonStringValue("\\\\N");
-//        sqoopOptions.setFieldsTerminatedBy('\001');
-//        sqoopOptions.setTargetDir("/data/hive/warehouse/ods_cmis.db/ods_" + hiveTableName.toLowerCase());
-//        sqoopOptions.setCodeOutputDir("sqoopjavafile");
-//        sqoopOptions.setJarOutputDir("sqoopcompilefile/" + CommonUtil.getUUID() + "/");
-//        sqoopOptions.setHiveDropDelims(true);
-//        sqoopOptions.setSqlQuery(querySql);
-//        sqoopOptions.setAppendMode(true);
-//        sqoopOptions.setClassName(hiveTableName + CommonUtil.getUUID());
-//        sqoopOptions.setSqlQuery(querySql);
-//        sqoopOptions.setAppendMode(true);
-//        sqoopOptions.setClassName(hiveTableName + CommonUtil.getUUID());
-//        Configuration conf= new Configuration();
-//        conf.set("fs.defaultFS","hdfs://xxx:8020");
-//        Sqoop sqoop = new Sqoop(sqoopTool, SqoopTool.loadPlugins(conf), sqoopOptions);
-//        Sqoop.runSqoop(sqoop, new String[]{});
 
     }
 
