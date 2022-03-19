@@ -1,21 +1,26 @@
 package com.xxl.job.executor.service.jobhandler;
 
 import com.cloudera.sqoop.SqoopOptions;
+import com.jcraft.jsch.ChannelExec;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.Session;
 import com.xxl.job.core.context.XxlJobHelper;
 import com.xxl.job.core.handler.annotation.XxlJob;
+import com.xxl.job.core.util.Shell;
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.sqoop.tool.ImportTool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -298,58 +303,10 @@ public class SampleXxlJob {
      */
     @XxlJob(value="sqoop")
     public void sqoop() throws Exception {
-        String JOB_NAME = "Sqoop Hive Job";
-        String MAPREDUCE_JOB = "Hive Map Reduce Job";
-        String DBURL ="jdbc:mysql://localhost:3306/sqoop";
-        String DRIVER = "com.mysql.cj.jdbc.Driver";
-        String USERNAME = "root";
-        String PASSWORD = "123456";
-        String HADOOP_HOME ="/opt/hadoop-2.9.2";
-        String JAR_OUTPUT_DIR = "/data";
-        String HIVE_HOME = "/opt/hive-2.7.3";
-        String HIVE_DIR = "/user/hive/warehouse/";
-        String WAREHOUSE_DIR = "hdfs://localhost:9000/user/hive/warehouse/mydb.db";
-        String SUCCESS = "SUCCESS !!!";
-        String FAIL = "FAIL !!!";
-        String table = "goodtbl";
-
-        SqoopOptions options = new SqoopOptions();
-        options.setConnectString(DBURL);
-        options.doOverwriteHiveTable();
-        options.setTableName(table);
-        options.setDriverClassName(DRIVER);
-        options.setUsername(USERNAME);
-        options.setPassword(PASSWORD);
-        options.setHadoopMapRedHome(HADOOP_HOME);
-        /* Hive connection parameters */
-        options.setHiveHome(HIVE_HOME);
-        options.setHiveImport(true);
-        options.setHiveTableName("goodtbl");
-        options.setOverwriteHiveTable(true);
-        options.setFailIfHiveTableExists(false);
-        //options.setFieldsTerminatedBy(',');
-        options.setDirectMode(true);
-        options.setNumMappers(1); // No. of Mappers to be launched for the job
-        options.setWarehouseDir(WAREHOUSE_DIR);
-        options.setJobName(JOB_NAME);
-        options.setMapreduceJobName(MAPREDUCE_JOB);
-        options.setTableName(table);
-        options.setJarOutputDir(JAR_OUTPUT_DIR);
-        System.out.println("Import Tool running ....");
-        ImportTool it = new ImportTool();
-        try{
-            int retVal = it.run(options);
-            if(retVal == 1){
-                XxlJobHelper.handleSuccess("执行成功");
-            }else{
-                XxlJobHelper.handleFail("执行失败");
-            }
-        }catch (Exception e){
-            e.printStackTrace();
-            XxlJobHelper.handleFail("执行失败:  "+e);
-        }
-
-
+        String cmd = "sqoop import --connect jdbc:mysql://master:3306/sqoop --username hive --password 123456 --table goodtbl --hive-import --hive-overwrite --hive-table mydb.goodtbl -m 1";
+        Shell shell = new Shell("localhost", "root", "123");
+        String execLog = shell.execCommand(cmd);
+        XxlJobHelper.log(execLog);
+        XxlJobHelper.handleSuccess("执行成功");
     }
-
 }
