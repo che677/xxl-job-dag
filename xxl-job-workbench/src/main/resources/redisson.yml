@@ -9,7 +9,7 @@ singleServerConfig:
   subscriptionsPerConnection: 5
   clientName: null
   # 替换为自己真实Redis服务端连接
-  address: "redis://139.196.191.128:6379"
+  address: "redis://master:6379"
   subscriptionConnectionMinimumIdleSize: 1
   subscriptionConnectionPoolSize: 50
   connectionMinimumIdleSize: 24

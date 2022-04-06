@@ -1,13 +1,13 @@
 package com.xxl.job.executor.service.jobhandler;
 
-import com.cloudera.sqoop.SqoopOptions;
+//import com.cloudera.sqoop.SqoopOptions;
 import com.xxl.job.core.context.XxlJobHelper;
 import com.xxl.job.core.handler.annotation.XxlJob;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.sqoop.Sqoop;
+//import org.apache.sqoop.Sqoop;
 
-import org.apache.sqoop.tool.ImportTool;
+//import org.apache.sqoop.tool.ImportTool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -300,27 +300,27 @@ public class SampleXxlJob {
      */
     @XxlJob(value="sqoop")
     public void sqoop() throws Exception {
-        SqoopOptions options = new SqoopOptions();
-        options.setHadoopMapRedHome("/opt/hadoop-2.9.2");
-        options.setConnectString("jdbc:mysql://localhost:3306/sqoop");
-        //options.setTableName("TABLE_NAME");
-        //options.setWhereClause("id>10");     // this where clause works when importing whole table, ie when setTableName() is used
-        options.setUsername("root");
-        options.setPassword("123456");
-        //options.setDirectMode(true);    // Make sure the direct mode is off when importing data to HBase
-        options.setNumMappers(1);         // Default value is 4
-        options.setSqlQuery("SELECT * FROM goodtbl WHERE $CONDITIONS limit 10");
-//        options.setSplitByCol("log_id");
-        // HBase options
-        options.setHiveDatabaseName("mydb");
-        options.setOverwriteHiveTable(true);
-        options.setHiveTableName("goodtbl");
-        int res = new ImportTool().run(options);
-        if (res == 0) {
-            XxlJobHelper.handleSuccess ("成功");
-        }else {
-            XxlJobHelper.handleFail("失败");
-        }
+//        SqoopOptions options = new SqoopOptions();
+//        options.setHadoopMapRedHome("/opt/hadoop-2.9.2");
+//        options.setConnectString("jdbc:mysql://localhost:3306/sqoop");
+//        //options.setTableName("TABLE_NAME");
+//        //options.setWhereClause("id>10");     // this where clause works when importing whole table, ie when setTableName() is used
+//        options.setUsername("root");
+//        options.setPassword("123456");
+//        //options.setDirectMode(true);    // Make sure the direct mode is off when importing data to HBase
+//        options.setNumMappers(1);         // Default value is 4
+//        options.setSqlQuery("SELECT * FROM goodtbl WHERE $CONDITIONS limit 10");
+////        options.setSplitByCol("log_id");
+//        // HBase options
+//        options.setHiveDatabaseName("mydb");
+//        options.setOverwriteHiveTable(true);
+//        options.setHiveTableName("goodtbl");
+//        int res = new ImportTool().run(options);
+//        if (res == 0) {
+//            XxlJobHelper.handleSuccess ("成功");
+//        }else {
+//            XxlJobHelper.handleFail("失败");
+//        }
 
 //        SqoopTool sqoopTool = SqoopTool.getTool("import");
 //        SqoopOptions sqoopOptions = new SqoopOptions();

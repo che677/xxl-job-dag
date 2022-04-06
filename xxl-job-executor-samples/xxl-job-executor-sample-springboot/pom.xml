@@ -86,11 +86,11 @@
             <version>2.9.2</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.apache.sqoop/sqoop -->
-        <dependency>
-            <groupId>org.apache.sqoop</groupId>
-            <artifactId>sqoop</artifactId>
-            <version>1.4.7</version>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>org.apache.sqoop</groupId>-->
+            <!--<artifactId>sqoop</artifactId>-->
+            <!--<version>1.4.7</version>-->
+        <!--</dependency>-->
 
     </dependencies>
 
