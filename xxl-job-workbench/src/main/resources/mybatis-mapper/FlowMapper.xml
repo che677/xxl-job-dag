@@ -8,4 +8,37 @@
     where id = #{id} and job_id>0
   </update>
 
+  <resultMap id="BaseResultMap" type="com.xxl.job.core.biz.model.FlowEntity" >
+    <id column="id" property="id"/>
+    <result column="job_id" property="jobId" />
+    <result column="node_list" property="nodeList" />
+    <result column="hop_list" property="hopList" />
+  </resultMap>
+  <delete id="deleteByPrimaryKey">
+    delete from t_flow
+    where id = #{id}
+  </delete>
+  <insert id="insert" parameterType="com.xxl.job.core.biz.model.FlowEntity" >
+    insert INTEGERo t_flow (id, job_id, node_list,
+      hop_list)
+    values (#{id,jdbcType=INTEGER}, #{jobId,jdbcType=INTEGER}, #{nodeList,jdbcType=LONGVARCHAR},
+      #{hopList,jdbcType=LONGVARCHAR})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="com.xxl.job.core.biz.model.FlowEntity" >
+    update t_flow
+    set job_id = #{jobId,jdbcType=INTEGER},
+      node_list = #{nodeList,jdbcType=LONGVARCHAR},
+      hop_list = #{hopList,jdbcType=LONGVARCHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" >
+    select id, job_id, node_list, hop_list
+    from t_flow
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select id, job_id, node_list, hop_list
+    from t_flow
+  </select>
+
 </mapper>
