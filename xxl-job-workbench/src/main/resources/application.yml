@@ -32,3 +32,11 @@ spring:
       auto-commit-interval: 1000
       key-deserializer: org.apache.kafka.common.serialization.IntegerDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+dubbo:
+  protocol:
+    name: dubbo
+    port: 20881
+  application:
+    name: demo-consumer # 消息者名字
+  registry:
+    address: zookeeper://master:2181?backup=slave1:2181,slave2:2181

@@ -221,5 +221,4 @@ public class CategoryServiceImpl implements CategoryService {
         return JSON.parseObject(catalogJson, new TypeReference<Map<String, List<Catelog2Vo>>>(){});
     }
 
-
 }

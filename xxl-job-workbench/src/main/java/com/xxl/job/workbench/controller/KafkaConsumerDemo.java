@@ -5,7 +5,7 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
 @Component
-public class KafkaConsumer {
+public class KafkaConsumerDemo {
 
     @KafkaListener(topics = "topic-spring-01")
     public void onMessage(ConsumerRecord<Integer,String> record){

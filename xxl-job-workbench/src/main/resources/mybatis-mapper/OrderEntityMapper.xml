@@ -3,7 +3,7 @@
 <mapper namespace="com.xxl.job.workbench.dao.OrderEntityMapper">
   <resultMap id="BaseResultMap" type="com.xxl.job.core.biz.model.OrderEntity">
     <id column="id" jdbcType="INTEGER" property="id" />
-    <result column="order_no" jdbcType="INTEGER" property="orderNo" />
+    <result column="order_no" jdbcType="VARCHAR" property="orderNo" />
     <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
   </resultMap>
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
@@ -13,12 +13,12 @@
   <insert id="insert" parameterType="com.xxl.job.core.biz.model.OrderEntity">
     insert into orders (id, order_no, create_time
       )
-    values (#{id,jdbcType=INTEGER}, #{orderNo,jdbcType=INTEGER}, #{createTime,jdbcType=TIMESTAMP}
+    values (#{id,jdbcType=INTEGER}, #{orderNo,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}
       )
   </insert>
   <update id="updateByPrimaryKey" parameterType="com.xxl.job.core.biz.model.OrderEntity">
     update orders
-    set order_no = #{orderNo,jdbcType=INTEGER},
+    set order_no = #{orderNo,jdbcType=VARCHAR},
       create_time = #{createTime,jdbcType=TIMESTAMP}
     where id = #{id,jdbcType=INTEGER}
   </update>
