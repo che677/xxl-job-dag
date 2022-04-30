@@ -1,26 +1,23 @@
 package com.xxl.job.executor.service.jobhandler;
 
-import com.cloudera.sqoop.SqoopOptions;
-import com.jcraft.jsch.ChannelExec;
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.Session;
+//import com.cloudera.sqoop.SqoopOptions;
 import com.xxl.job.core.context.XxlJobHelper;
 import com.xxl.job.core.handler.annotation.XxlJob;
-import com.xxl.job.core.util.Shell;
 import lombok.extern.slf4j.Slf4j;
-
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.sqoop.tool.ImportTool;
+//import org.apache.sqoop.Sqoop;
+
+//import org.apache.sqoop.tool.ImportTool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -303,10 +300,52 @@ public class SampleXxlJob {
      */
     @XxlJob(value="sqoop")
     public void sqoop() throws Exception {
-        String cmd = "sqoop import --connect jdbc:mysql://master:3306/sqoop --username hive --password 123456 --table goodtbl --hive-import --hive-overwrite --hive-table mydb.goodtbl -m 1";
-        Shell shell = new Shell("localhost", "root", "123");
-        String execLog = shell.execCommand(cmd);
-        XxlJobHelper.log(execLog);
-        XxlJobHelper.handleSuccess("执行成功");
+//        SqoopOptions options = new SqoopOptions();
+//        options.setHadoopMapRedHome("/opt/hadoop-2.9.2");
+//        options.setConnectString("jdbc:mysql://localhost:3306/sqoop");
+//        //options.setTableName("TABLE_NAME");
+//        //options.setWhereClause("id>10");     // this where clause works when importing whole table, ie when setTableName() is used
+//        options.setUsername("root");
+//        options.setPassword("123456");
+//        //options.setDirectMode(true);    // Make sure the direct mode is off when importing data to HBase
+//        options.setNumMappers(1);         // Default value is 4
+//        options.setSqlQuery("SELECT * FROM goodtbl WHERE $CONDITIONS limit 10");
+////        options.setSplitByCol("log_id");
+//        // HBase options
+//        options.setHiveDatabaseName("mydb");
+//        options.setOverwriteHiveTable(true);
+//        options.setHiveTableName("goodtbl");
+//        int res = new ImportTool().run(options);
+//        if (res == 0) {
+//            XxlJobHelper.handleSuccess ("成功");
+//        }else {
+//            XxlJobHelper.handleFail("失败");
+//        }
+
+//        SqoopTool sqoopTool = SqoopTool.getTool("import");
+//        SqoopOptions sqoopOptions = new SqoopOptions();
+//        sqoopOptions.setConnectString("xxx");
+//        sqoopOptions.setUsername("xxx");
+//        sqoopOptions.setPassword("xxx");
+//        sqoopOptions.setNumMappers(1);
+//        sqoopOptions.setNullStringValue("\\\\N");
+//        sqoopOptions.setNullNonStringValue("\\\\N");
+//        sqoopOptions.setFieldsTerminatedBy('\001');
+//        sqoopOptions.setTargetDir("/data/hive/warehouse/ods_cmis.db/ods_" + hiveTableName.toLowerCase());
+//        sqoopOptions.setCodeOutputDir("sqoopjavafile");
+//        sqoopOptions.setJarOutputDir("sqoopcompilefile/" + CommonUtil.getUUID() + "/");
+//        sqoopOptions.setHiveDropDelims(true);
+//        sqoopOptions.setSqlQuery(querySql);
+//        sqoopOptions.setAppendMode(true);
+//        sqoopOptions.setClassName(hiveTableName + CommonUtil.getUUID());
+//        sqoopOptions.setSqlQuery(querySql);
+//        sqoopOptions.setAppendMode(true);
+//        sqoopOptions.setClassName(hiveTableName + CommonUtil.getUUID());
+//        Configuration conf= new Configuration();
+//        conf.set("fs.defaultFS","hdfs://xxx:8020");
+//        Sqoop sqoop = new Sqoop(sqoopTool, SqoopTool.loadPlugins(conf), sqoopOptions);
+//        Sqoop.runSqoop(sqoop, new String[]{});
+
     }
+
 }
