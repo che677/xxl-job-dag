@@ -55,7 +55,7 @@ public class FlowController {
 
     @PostMapping("/updateOrder")
     public ReturnT<String> updateOrder(){
-        accountService.saveOrUpdateAccount();
+//        accountService.saveOrUpdateAccount();
         orderService.saveOrder();
         return ReturnT.SUCCESS;
     }

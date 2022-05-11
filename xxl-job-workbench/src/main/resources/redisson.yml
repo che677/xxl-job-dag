@@ -26,11 +26,11 @@ clusterServersConfig:
   #从节点发布和订阅连接池大小 默认值50
 #  slaveSubscriptionConnectionPoolSize: 50
   # 从节点最小空闲连接数 默认值32
-  slaveConnectionMinimumIdleSize: 32
+  slaveConnectionMinimumIdleSize: 8
   # 从节点连接池大小 默认64
   slaveConnectionPoolSize: 64
   # 主节点最小空闲连接数 默认32
-  masterConnectionMinimumIdleSize: 32
+  masterConnectionMinimumIdleSize: 8
   # 主节点连接池大小 默认64
   masterConnectionPoolSize: 64
   # 订阅操作的负载均衡模式
@@ -39,12 +39,18 @@ clusterServersConfig:
   readMode: SLAVE
   # 集群地址
   nodeAddresses:
-    - "redis://10.0.2.3:7001"
-    - "redis://10.0.2.3:7002"
-    - "redis://10.0.2.4:7001"
-    - "redis://10.0.2.4:7002"
-    - "redis://10.0.2.5:7001"
-    - "redis://10.0.2.5:7002"
+    - "redis://localhost:7001"
+    - "redis://localhost:7002"
+    - "redis://localhost:7003"
+    - "redis://localhost:7004"
+    - "redis://localhost:7005"
+    - "redis://localhost:7006"
+#    - "redis://10.0.2.3:7001"
+#    - "redis://10.0.2.3:7002"
+#    - "redis://10.0.2.4:7001"
+#    - "redis://10.0.2.4:7002"
+#    - "redis://10.0.2.5:7001"
+#    - "redis://10.0.2.5:7002"
   # 对Redis集群节点状态扫描的时间间隔。单位是毫秒。默认1000
   scanInterval: 1000
 #这个线程池数量被所有RTopic对象监听器，RRemoteService调用者和RExecutorService任务共同共享。默认2

@@ -176,7 +176,7 @@ public class CategoryServiceImpl implements CategoryService {
         ValueOperations<String,String> ops = redisTemplate.opsForValue();
         String uuid = UUID.randomUUID().toString();
         // 这里必须是原子操作
-        RLock catalogLock = redisson.getLock("catalogLock");
+//        RLock catalogLock = redisson.getLock("catalogLock");
         Boolean success = ops.setIfAbsent("lock", uuid, 30, TimeUnit.SECONDS);
         if(success){
             System.out.println("获取分布式锁成功");
