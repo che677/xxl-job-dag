@@ -10,4 +10,6 @@ public interface CategoryMapper {
 
     List<CategoryEntity> selectList();
 
+    Integer updateCount(Long catId);
+
 }

@@ -232,6 +232,12 @@
 		WHERE t.taskset_id = #{tasksetId}
 	</select>
 
+	<select id="getJobsByFlowId" parameterType="java.util.HashMap" resultMap="XxlJobInfo">
+		SELECT <include refid="Base_Column_List" />
+		FROM xxl_job_info AS t
+		WHERE t.flow_id = #{flowId}
+	</select>
+
 	<select id="findAllCount" resultType="int">
 		SELECT count(1)
 		FROM xxl_job_info

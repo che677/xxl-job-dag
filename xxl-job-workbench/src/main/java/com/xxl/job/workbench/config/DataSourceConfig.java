@@ -88,7 +88,6 @@ public class DataSourceConfig {
         DynamicDataSource dynamicDataSource = new DynamicDataSource();
         dynamicDataSource.setTargetDataSources(dataSourceMap);
         dynamicDataSource.setDefaultTargetDataSource(masterDataSource());
-
         return dynamicDataSource;
     }
 

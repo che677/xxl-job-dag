@@ -1,31 +1,4 @@
-server:
-  port: 12809
-  servlet:
-    context-path: /workbench
-
-mybatis:
-  mapper-locations: classpath:mapper/*.xml
-  type-aliases-package: com.xxl.job.core.biz.model
-
 spring:
-  datasource:
-    master:
-      url: jdbc:mysql://localhost:3306/workbench?characterEncoding=UTF-8&autoReconnect=true&zeroDateTimeBehavior=convertToNull&useUnicode=true&serverTimezone=GMT
-      username: root
-      password: 123456
-      driverClassName: com.mysql.cj.jdbc.Driver
-    slave1:
-      url: jdbc:mysql://localhost:3307/workbench?characterEncoding=UTF-8&autoReconnect=true&zeroDateTimeBehavior=convertToNull&useUnicode=true&serverTimezone=GMT
-      username: root
-      password: 123456
-      driverClassName: com.mysql.cj.jdbc.Driver
-    slave2:
-      url: jdbc:mysql://localhost:3308/workbench?characterEncoding=UTF-8&autoReconnect=true&zeroDateTimeBehavior=convertToNull&useUnicode=true&serverTimezone=GMT
-      username: root
-      password: 123456
-      driverClassName: com.mysql.cj.jdbc.Driver
-    hikari:
-      leak-detection-threshold: 2000
   kafka:
     bootstrap-servers: master:9092,master:9093
     producer:
@@ -37,10 +10,10 @@ spring:
       buffer-memory: 33554432
       compression-type: snappy
       properties:
-      # request.timeout.ms 在发送数据时等待服务器返回响应的时间
+        # request.timeout.ms 在发送数据时等待服务器返回响应的时间
         request:
           timeout:
-            ms: 1000
+            ms: 3000
         # 每一批次发送的等待时间
         linger:
           ms: 100
@@ -67,11 +40,3 @@ spring:
       missing-topics-fatal: false
       ack-mode: manual_immediate
       concurrency: 3
-dubbo:
-  protocol:
-    name: dubbo
-    port: 20881
-  application:
-    name: demo-consumer # 消息者名字
-  registry:
-    address: zookeeper://master:2181?backup=master:2182

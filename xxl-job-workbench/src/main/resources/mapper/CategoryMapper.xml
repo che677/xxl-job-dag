@@ -41,4 +41,10 @@
     from pms_category
   </select>
 
+  <select id="updateCount" resultType="java.lang.Integer">
+    update pms_category
+    set product_count=product_count+1
+    where cat_id=#{catId}
+  </select>
+
 </mapper>

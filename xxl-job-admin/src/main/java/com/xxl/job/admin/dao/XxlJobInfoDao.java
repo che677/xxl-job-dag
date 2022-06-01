@@ -48,4 +48,6 @@ public interface XxlJobInfoDao {
 	public int scheduleUpdate(XxlJobInfo xxlJobInfo);
 
 	public List<XxlJobInfo> getJobsByTaskSet(@Param("tasksetId") String tasksetId);
+
+	public XxlJobInfo getJobsByFlowId(@Param("flowId") String flowId);
 }

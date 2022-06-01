@@ -24,7 +24,7 @@
         </javaModelGenerator>
 
         <!--生成映射文件存放位置-->
-        <sqlMapGenerator targetPackage="mybatis-mapper" targetProject="src/main/resources">
+        <sqlMapGenerator targetPackage="mapper" targetProject="src/main/resources">
             <property name="enableSubPackages" value="true"/>
         </sqlMapGenerator>
 
@@ -33,7 +33,7 @@
             <property name="enableSubPackages" value="true"/>
         </javaClientGenerator>
 
-        <table tableName="orders" domainObjectName="OrderEntity"/>
+        <table tableName="mq_message" domainObjectName="MqEntity"/>
 
     </context>
 </generatorConfiguration>

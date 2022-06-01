@@ -85,7 +85,7 @@ public class XxlJobCompleter {
             }
 
             // 这里是任务组的回调函数，执行DAG流程编排任务，并启动后续任务
-            if(xxlJobInfo.getFlowId()!=null){
+            if(xxlJobInfo.getTaskSetId()!=null){
                 RedissonClient redisson = null;
                 try{
                     redisson = XxlJobAdminConfig.getAdminConfig().getRedisson();
