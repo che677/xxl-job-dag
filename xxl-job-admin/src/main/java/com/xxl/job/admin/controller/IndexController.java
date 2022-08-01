@@ -4,6 +4,9 @@ import com.xxl.job.admin.controller.annotation.PermissionLimit;
 import com.xxl.job.admin.service.LoginService;
 import com.xxl.job.admin.service.XxlJobService;
 import com.xxl.job.core.biz.model.ReturnT;
+import com.xxl.job.delay.common.Args;
+import com.xxl.job.delay.iface.RedisDelayQueue;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,6 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * index controller
@@ -44,9 +48,17 @@ public class IndexController {
 		return "index";
 	}
 
+//	@Autowired
+//	RedisDelayQueue redisDelayQueue;
+
     @RequestMapping("/chartInfo")
 	@ResponseBody
 	public ReturnT<Map<String, Object>> chartInfo(Date startDate, Date endDate) {
+//		Long rt = System.currentTimeMillis()+5000;
+//		Args myArgs = new Args();
+//		String id = UUID.randomUUID().toString();
+//		myArgs.setId(id);
+//		redisDelayQueue.add(myArgs,"workbench",rt);
         ReturnT<Map<String, Object>> chartInfo = xxlJobService.chartInfo(startDate, endDate);
         return chartInfo;
     }

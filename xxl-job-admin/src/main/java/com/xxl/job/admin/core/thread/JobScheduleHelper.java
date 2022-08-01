@@ -52,6 +52,7 @@ public class JobScheduleHelper {
                 logger.info(">>>>>>>>> init xxl-job admin scheduler success.");
 
                 // pre-read count: treadpool-size * trigger-qps (each trigger cost 50ms, qps = 1000/50 = 20)
+                // 每次触发需要50ms，1s能触发20个任务，有300个线程，能触发300*20个任务
                 int preReadCount = (XxlJobAdminConfig.getAdminConfig().getTriggerPoolFastMax() + XxlJobAdminConfig.getAdminConfig().getTriggerPoolSlowMax()) * 20;
 
                 while (!scheduleThreadToStop) {
@@ -124,10 +125,8 @@ public class JobScheduleHelper {
 
                                 } else {
                                     // 2.3、trigger-pre-read：time-ring trigger && make next-trigger-time
-
                                     // 1、make ring second
                                     int ringSecond = (int)((jobInfo.getTriggerNextTime()/1000)%60);
-
                                     // 2、push time ring
                                     pushTimeRing(ringSecond, jobInfo.getId());
 
@@ -224,7 +223,7 @@ public class JobScheduleHelper {
 
                 while (!ringThreadToStop) {
 
-                    // align second
+                    // align second，这里就可以整秒执行
                     try {
                         TimeUnit.MILLISECONDS.sleep(1000 - System.currentTimeMillis() % 1000);
                     } catch (InterruptedException e) {
@@ -236,7 +235,7 @@ public class JobScheduleHelper {
                     try {
                         // second data
                         List<Integer> ringItemData = new ArrayList<>();
-                        int nowSecond = Calendar.getInstance().get(Calendar.SECOND);   // 避免处理耗时太长，跨过刻度，向前校验一个刻度；
+                        int nowSecond = Calendar.getInstance().get(Calendar.SECOND);
                         for (int i = 0; i < 2; i++) {
                             List<Integer> tmpData = ringData.remove( (nowSecond+60-i)%60 );
                             if (tmpData != null) {

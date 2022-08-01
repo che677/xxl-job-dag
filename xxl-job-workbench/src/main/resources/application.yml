@@ -74,4 +74,6 @@ dubbo:
   application:
     name: demo-consumer # 消息者名字
   registry:
-    address: zookeeper://master:2181?backup=master:2182
+    address: zookeeper://master:2181?backup=master:2181
+  consumer:
+    timeout: 1000

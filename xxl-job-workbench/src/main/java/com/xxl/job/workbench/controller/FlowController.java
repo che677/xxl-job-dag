@@ -11,6 +11,7 @@ import com.xxl.job.workbench.service.CategoryService;
 import com.xxl.job.workbench.service.DataService;
 import com.xxl.job.workbench.service.FlowService;
 import org.apache.dubbo.config.annotation.Reference;
+import org.apache.kafka.common.protocol.types.Field;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,9 +22,7 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 @RestController
 public class FlowController {
@@ -117,6 +116,27 @@ public class FlowController {
         }, 10, TimeUnit.SECONDS);
     }
 
-
+    @PostMapping("/delayTest")
+    public void delayTest(){
+        Thread thread = null;
+        try{
+            FutureTask<Boolean> futureTask = new FutureTask<Boolean>(new Callable<Boolean>() {
+                @Override
+                public Boolean call() throws Exception {
+                    System.out.println("===");
+                    Thread.sleep(15000);
+                    return true;
+                }
+            });
+            thread = new Thread(futureTask);
+            thread.start();
+            Boolean result = futureTask.get(10, TimeUnit.SECONDS);
+            System.out.println(result);
+        }catch (Exception e){
+            System.out.println("报错");
+        }finally {
+            thread.interrupt();
+        }
+    }
 
 }

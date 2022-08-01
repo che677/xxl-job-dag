@@ -24,6 +24,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -346,6 +348,53 @@ public class SampleXxlJob {
 //        Sqoop sqoop = new Sqoop(sqoopTool, SqoopTool.loadPlugins(conf), sqoopOptions);
 //        Sqoop.runSqoop(sqoop, new String[]{});
 
+    }
+
+    @XxlJob(value="last")
+    public void last() throws InterruptedException {
+        try {
+            Thread.sleep(1000);
+            String sql = "select id, count(1) from `workbench`.goodtbl where id>50000 and stock_number>80 and price>9\n" +
+                    "group by id\n" +
+                    "union\n" +
+                    "select id, count(1) from `workbench`.goodtbl where id>50000 and stock_number>80 and price>9 and gname like '%MQ%'\n" +
+                    "group by id\n" +
+                    "union\n" +
+                    "select id, count(1) from `workbench`.goodtbl where id>50000 and stock_number>80 and price>9\n" +
+                    "group by id";
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/xxl_job?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&serverTimezone=Asia/Shanghai", "root", "123456");
+            Statement statement = conn.createStatement();
+
+            new Thread(()-> {
+                try {
+                    System.out.println(System.currentTimeMillis());
+                    statement.executeQuery(sql);
+                    System.out.println(System.currentTimeMillis());
+                } catch (SQLException e) {
+                    System.out.println("lllll");
+                    e.printStackTrace();
+                }
+            }).start();
+            Thread.sleep(1000);
+            new Thread(()-> {
+                try {
+                    statement.cancel();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }).start();
+            log.error("======");
+        } catch (InterruptedException e) {
+            log.error("++++++");
+            e.printStackTrace();
+            throw e;
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            log.error("-----");
+        }
     }
 
 }
