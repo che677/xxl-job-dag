@@ -302,49 +302,39 @@ public class KafkaController {
         }
     }
 
-
+    /**
+     * 防止丢失消息，发送消息的时候，需要做如下代码的处理
+     * @param epoch
+     */
     @PostMapping("/loseSend")
     public void loseSend(Integer epoch){
         String topic = "lose_topic";
         for(int i = 0; i<epoch; i++){
             String key = String.valueOf(i);
-            try{
-                final ListenableFuture<SendResult<String, String>> future =
-                        template.send(topic, key, "ddd");
-                // 这种是异步发送的，发送结果是异步获取的，当ack实现之后才会返回callback函数
-                future.addCallback(new ListenableFutureCallback<SendResult<String, String>>() {
-                    @Override
-                    public void onFailure(Throwable throwable) {
-                        log.error("网络超时发送失败");
-                        MqEntity entity = new MqEntity();
-                        entity.setMessageId(key);
-                        entity.setContent(key);
-                        entity.setMessageStatus(0);
-                        try{
-                            int insert = mqMapper.insert(entity);
-                        }catch (Exception e){
-                            log.error("插入表失败:    ", key);
-                        }
+            final ListenableFuture<SendResult<String, String>> future =
+                    template.send(topic, key, "ddd");
+            // 这种是异步发送的，发送结果是异步获取的，当ack实现之后才会返回callback函数
+            future.addCallback(new ListenableFutureCallback<SendResult<String, String>>() {
+                @Override
+                public void onFailure(Throwable throwable) {
+                    log.error("网络超时发送失败");
+                    MqEntity entity = new MqEntity();
+                    entity.setMessageId(key);
+                    entity.setContent(key);
+                    entity.setMessageStatus(0);
+                    try{
+                        int insert = mqMapper.insert(entity);
+                    }catch (Exception e){
+                        log.error("插入表失败:    ", key);
                     }
-
-                    @Override
-                    public void onSuccess(SendResult<String, String> result) {
-                        RecordMetadata recordMetadata = result.getRecordMetadata();
-                        System.out.println("发送成功" + recordMetadata.topic() + "\t" + recordMetadata.partition());
-                    }
-                });
-            }catch (Exception e){
-                log.error("任务报错发送失败");
-                MqEntity entity = new MqEntity();
-                entity.setMessageId(key);
-                entity.setContent(key);
-                entity.setMessageStatus(0);
-                try{
-                    int insert = mqMapper.insert(entity);
-                }catch (Exception e1){
-                    log.error("插入表失败:    ", key);
                 }
-            }
+
+                @Override
+                public void onSuccess(SendResult<String, String> result) {
+                    RecordMetadata recordMetadata = result.getRecordMetadata();
+                    System.out.println("发送成功" + recordMetadata.topic() + "\t" + recordMetadata.partition());
+                }
+            });
         }
     }
 

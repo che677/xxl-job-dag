@@ -12,4 +12,8 @@ public class FlowEntity {
 
     private String hopList;
 
+    private String jobDesc;
+
+    private Integer countNum;
+
 }

@@ -206,13 +206,11 @@
 	</update>
 
 	<update id="updateTask" parameterType="com.xxl.job.admin.core.model.XxlJobInfo">
-	update xxl_job_info set taskset_id=#{list.taskSetId}
-	where id=#{list.id}
-		<!--<foreach collection="list" item="item" index="index" open="" close=""  separator=";">-->
-			<!--update xxl_job_info-->
-			<!--set taskset_id=#{item.taskSetId}-->
-			<!--where id=#{item.id}-->
-		<!--</foreach>-->
+		<foreach collection="list" item="item" index="index" open="" close=""  separator=";">
+			update xxl_job_info
+			set taskset_id=#{item.taskSetId}
+			where id=#{item.id}
+		</foreach>
 	</update>
 
 	<delete id="delete" parameterType="java.util.HashMap">

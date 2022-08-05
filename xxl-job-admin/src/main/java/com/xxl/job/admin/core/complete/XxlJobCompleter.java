@@ -8,8 +8,10 @@ import com.xxl.job.admin.core.thread.JobCompleteHelper;
 import com.xxl.job.admin.core.thread.JobTriggerPoolHelper;
 import com.xxl.job.admin.core.trigger.TriggerTypeEnum;
 import com.xxl.job.admin.core.util.I18nUtil;
+import com.xxl.job.admin.service.FlowService;
 import com.xxl.job.core.biz.model.ReturnT;
 import com.xxl.job.core.context.XxlJobContext;
+import com.xxl.job.core.enums.SampleEnum;
 import org.redisson.api.RAtomicLong;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
@@ -52,7 +54,7 @@ public class XxlJobCompleter {
         // 1、handle success, to trigger child job
         String triggerChildMsg = null;
         String jobIds = null;
-        RAtomicLong atomicLong = null;
+//        RAtomicLong atomicLong = null;
         if (XxlJobContext.HANDLE_COCE_SUCCESS == xxlJobLog.getHandleCode()) {
             XxlJobInfo xxlJobInfo = XxlJobAdminConfig.getAdminConfig().getXxlJobInfoDao().loadById(xxlJobLog.getJobId());
             // 链式依赖任务
@@ -85,19 +87,76 @@ public class XxlJobCompleter {
             }
 
             // 这里是任务组的回调函数，执行DAG流程编排任务，并启动后续任务
+
+            // 可以采用redis的原子类来实现，或者用分布式锁来实现
+//            if(xxlJobInfo.getTaskSetId()!=null){
+//                RedissonClient redisson = null;
+//                try{
+//                    redisson = XxlJobAdminConfig.getAdminConfig().getRedisson();
+//                    atomicLong = redisson.getAtomicLong("taskset:" + xxlJobInfo.getFlowId());
+//                }catch (Exception e){
+//                    logger.error("无法添加计数器");
+//                    return;
+//                }
+//                // 如果这里是起始触发节点，直接触发后续依赖任务即可
+//                if(SampleEnum.EVENT_HANDLER.getTitle().equalsIgnoreCase(xxlJobInfo.getExecutorHandler())){
+//                    // 针对任务组初始化节点执行流程编排；如果为了避免每次触发任务都重复生成taskset，也可以在保存flow工作流的时候执行本步骤
+//                    List<TaskSet> taskSets = XxlJobAdminConfig.getAdminConfig().getFlowService().
+//                            executeFlow(xxlJobInfo.getFlowId());
+//                    // 获取第一个元素
+//                    List<TaskSet> collect = taskSets.parallelStream().filter(r -> 1 == r.getIsFirst()).collect(Collectors.toList());
+//                    if(CollectionUtils.isEmpty(collect)){
+//                        // 没有第一个元素，有错误
+//                        logger.error("找不到初始任务集");
+//                        return;
+//                    }
+//                    String nextId = collect.get(0).getNextId();
+//                    jobIds = XxlJobAdminConfig.getAdminConfig().getTaskSetMapper().selectByPrimaryKey(nextId).getJobId();
+//                    String[] split = jobIds.split(",");
+//                    atomicLong.set(split.length);
+//                }else{
+//                    // 如果这里是中间节点与末尾节点，先获取当前流程的原子类，看看任务状态是否是都已完成；
+//                    long count = atomicLong.decrementAndGet();
+//                    if(count == 0){
+//                        // 如果是0的话，证明本轮任务完成，直接启动下一个taskset的程序，并添加下一轮的计数器
+//                        TaskSet taskSet = XxlJobAdminConfig.getAdminConfig().getTaskSetMapper().selectByPrimaryKey(xxlJobInfo.getTaskSetId());
+//                        TaskSet nextTaskSet = XxlJobAdminConfig.getAdminConfig().getTaskSetMapper().selectByPrimaryKey(taskSet.getNextId());
+//                        jobIds = ObjectUtils.isEmpty(nextTaskSet)?null:nextTaskSet.getJobId();
+//                        if(!StringUtils.isEmpty(jobIds)){
+//                            String[] split = jobIds.split(",");
+//                            atomicLong.set(split.length);
+//                        }else{
+//                            // 下游没有jobIds，证明任务组已经完成任务
+//                            atomicLong.delete();
+//                        }
+//                    }else{
+//                        //否则不予处理
+//                        jobIds = null;
+//                    }
+//                }
+//                // 再触发下游依赖任务
+//                if(!StringUtils.isEmpty(jobIds)){
+//                    for(String childJob:jobIds.split(",")){
+//                        JobTriggerPoolHelper.trigger(Integer.valueOf(childJob), TriggerTypeEnum.PARENT,
+//                                -1, null, null, null);
+//                    }
+//                }
+//            }
+
+
+            // 可以直接用MySQL做计数器，并发去update的时候由于存在写锁，不会产生一致性问题
             if(xxlJobInfo.getTaskSetId()!=null){
-                RedissonClient redisson = null;
+                FlowService flowService = null;
                 try{
-                    redisson = XxlJobAdminConfig.getAdminConfig().getRedisson();
-                    atomicLong = redisson.getAtomicLong("taskset:" + xxlJobInfo.getFlowId());
+                    flowService = XxlJobAdminConfig.getAdminConfig().getFlowService();
+                    flowService.updateCount(xxlJobInfo.getFlowId(), 0);
                 }catch (Exception e){
-                    logger.error("无法添加计数器");
+                    logger.error("无法添加计数器",e);
                     return;
                 }
-                JobCompleteHelper helper = JobCompleteHelper.getInstance();
                 // 如果这里是起始触发节点，直接触发后续依赖任务即可
-                if("eventHandler".equalsIgnoreCase(xxlJobInfo.getExecutorHandler())){
-                    // 针对任务组初始化节点执行流程编排
+                if(SampleEnum.EVENT_HANDLER.getTitle().equalsIgnoreCase(xxlJobInfo.getExecutorHandler())){
+                    // 针对任务组初始化节点执行流程编排；如果为了避免每次触发任务都重复生成taskset，也可以在保存flow工作流的时候执行本步骤
                     List<TaskSet> taskSets = XxlJobAdminConfig.getAdminConfig().getFlowService().
                             executeFlow(xxlJobInfo.getFlowId());
                     // 获取第一个元素
@@ -110,28 +169,28 @@ public class XxlJobCompleter {
                     String nextId = collect.get(0).getNextId();
                     jobIds = XxlJobAdminConfig.getAdminConfig().getTaskSetMapper().selectByPrimaryKey(nextId).getJobId();
                     String[] split = jobIds.split(",");
-                    atomicLong.set(split.length);
+                    flowService.updateCount(xxlJobInfo.getFlowId(), split.length);
                 }else{
-                    // 如果这里是中间节点与末尾节点，先获取当前流程的原子类，看看任务状态是否是都已完成；
-                    long count = atomicLong.decrementAndGet();
+                    // 如果这里是中间节点与末尾节点，先获取当前流程的计数，看看任务状态是否是都已完成；
+                    long count = flowService.decrease(xxlJobInfo.getFlowId());
                     if(count == 0){
-                        // 如果是0的话，证明本轮任务完成，直接启动下一个taskset的程序，并添加下一轮的计数器
+                        // 如果是0的话，证明countNum已经是0了，没有做修改，本轮任务完成，直接启动下一个taskset的程序，并添加下一轮的计数器
                         TaskSet taskSet = XxlJobAdminConfig.getAdminConfig().getTaskSetMapper().selectByPrimaryKey(xxlJobInfo.getTaskSetId());
                         TaskSet nextTaskSet = XxlJobAdminConfig.getAdminConfig().getTaskSetMapper().selectByPrimaryKey(taskSet.getNextId());
                         jobIds = ObjectUtils.isEmpty(nextTaskSet)?null:nextTaskSet.getJobId();
                         if(!StringUtils.isEmpty(jobIds)){
                             String[] split = jobIds.split(",");
-                            atomicLong.set(split.length);
+                            flowService.updateCount(xxlJobInfo.getFlowId(),split.length);
                         }else{
                             // 下游没有jobIds，证明任务组已经完成任务
-                            atomicLong.delete();
+                            flowService.updateCount(xxlJobInfo.getFlowId(), 0);
                         }
                     }else{
                         //否则不予处理
                         jobIds = null;
                     }
                 }
-                // 再触发下游依赖任务，并执行分布式锁解锁
+                // 再触发下游依赖任务
                 if(!StringUtils.isEmpty(jobIds)){
                     for(String childJob:jobIds.split(",")){
                         JobTriggerPoolHelper.trigger(Integer.valueOf(childJob), TriggerTypeEnum.PARENT,

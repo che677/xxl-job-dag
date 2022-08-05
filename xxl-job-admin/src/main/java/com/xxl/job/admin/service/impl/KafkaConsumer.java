@@ -4,6 +4,7 @@ import com.xxl.job.admin.core.model.XxlJobInfo;
 import com.xxl.job.admin.core.route.ExecutorRouteStrategyEnum;
 import com.xxl.job.admin.core.thread.JobTriggerPoolHelper;
 import com.xxl.job.admin.dao.MqMapper;
+import com.xxl.job.admin.dao.XxlJobInfoDao;
 import com.xxl.job.admin.service.XxlJobService;
 import com.xxl.job.core.biz.model.MqEntity;
 import com.xxl.job.core.biz.model.ReturnT;
@@ -39,7 +40,7 @@ public class KafkaConsumer {
         String value = record.value();
         System.out.println(key+":       "+value);
         try{
-            XxlJobInfo xxlJobInfo = xxlJobService.getByUnique(key);
+            XxlJobInfo xxlJobInfo = xxlJobService.loadById(Integer.valueOf(key));
             ReturnT<String> res = null;
             // 如果是空的，就新建任务，并触发执行
             if(ObjectUtils.isEmpty(xxlJobInfo)){

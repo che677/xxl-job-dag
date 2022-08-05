@@ -11,4 +11,7 @@ public interface FlowService {
 
     List<TaskSet> getTaskSet(Flow flow);
 
+    int updateCount(int flowId, int countNum);
+
+    int decrease(int flowId);
 }

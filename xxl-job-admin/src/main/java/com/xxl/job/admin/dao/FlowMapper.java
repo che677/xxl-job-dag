@@ -16,4 +16,6 @@ public interface FlowMapper {
     List<FlowEntity> selectAll();
 
     int updateByPrimaryKey(FlowEntity record);
+
+    int decrease(int id);
 }

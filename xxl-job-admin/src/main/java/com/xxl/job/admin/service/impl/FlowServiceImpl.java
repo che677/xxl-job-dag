@@ -59,15 +59,7 @@ public class FlowServiceImpl implements FlowService {
     public List<TaskSet> executeFlow(int flowId){
         FlowEntity flowEntity = flowMapper.selectByPrimaryKey(flowId);
         Flow flow = new Flow();
-        String nodeList = flowEntity.getNodeList();
-        if(StringUtils.isEmpty(nodeList)){
-            return new ArrayList<>();
-        }
-        String[] split = nodeList.split(",");
-        List<XxlJobInfo> nodeEntities = new ArrayList<>();
-        for(String s:split){
-            nodeEntities.add(xxlJobInfoDao.loadById(Integer.valueOf(s)));
-        }
+        List<XxlJobInfo> nodeEntities = xxlJobInfoDao.getJobsByFlowId(String.valueOf(flowId));
         List<HopEntity> hopEntities = hopMapper.queryByFlowId(flowId);
         List<Hop> hopList = ListBeanUtils.copyList(hopEntities, Hop::new);
         flow.setNodeList(nodeEntities);
@@ -89,10 +81,10 @@ public class FlowServiceImpl implements FlowService {
         // 将结果整合为一个完整的taskSet，并落入数据库
         List<TaskSet> res = new ArrayList<>();
         List<XxlJobInfo> updates = new ArrayList<>();
-        // Hop表本质上是一个DAG，可以通过拓扑排序得到层级关系分明的执行顺序，然后进行计算即可
-        // 将节点放入map，方便根据id进行检索
+        // DAG，可以通过拓扑排序得到层级关系分明的执行顺序，然后进行计算即可
+        // 将节点放入map，方便根据id进行检索;
         Map<Integer, XxlJobInfo> nodeMap = new HashMap();
-        flow.getNodeList().stream().forEach(r ->{
+        flow.getNodeList().forEach(r ->{
             nodeMap.put(r.getId(), r);
         });
         // 然后依据拓扑排序算法，生成执行顺序
@@ -155,7 +147,7 @@ public class FlowServiceImpl implements FlowService {
             // 为上一级任务集添加连接到本任务集
             if(res.size()>0){
                 res.get(res.size()-1).setNextId(taskSet.getId());
-            }else if(res.size() == 0){
+            }else {
                 taskSet.setIsFirst(1);
             }
             taskSet.setTriggerTime(new Date()); // 获取当前时间，便于后续筛选日志信息
@@ -163,10 +155,25 @@ public class FlowServiceImpl implements FlowService {
             res.add(taskSet);
         }
         // 任务执行完毕，将taskset集合落库
-        taskSetMapper.deleteByFlowId(flow.getId());
-        int i = taskSetMapper.batchInsert(res);
-        updates.stream().forEach(r->xxlJobInfoDao.updateTask(r));
-//        int j = xxlJobInfoDao.updateTask(updates);
+        try{
+            taskSetMapper.deleteByFlowId(flow.getId());
+            int i = taskSetMapper.batchInsert(res);
+            int j = xxlJobInfoDao.updateTask(updates);
+        }catch (Exception e){
+            e.printStackTrace();
+
+        }
         return res;
+    }
+
+    public int updateCount(int flowId, int countNum){
+        FlowEntity flowEntity = new FlowEntity();
+        flowEntity.setId(flowId);
+        flowEntity.setCountNum(countNum);
+        return flowMapper.updateByPrimaryKey(flowEntity);
+    }
+
+    public int decrease(int flowId){
+        return flowMapper.decrease(flowId);
     }
 }

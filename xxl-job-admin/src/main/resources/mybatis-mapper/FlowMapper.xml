@@ -6,6 +6,7 @@
     <result column="job_id" property="jobId" />
     <result column="node_list" property="nodeList" />
     <result column="hop_list" property="hopList" />
+    <result column="count_num" property="countNum"/>
   </resultMap>
   <delete id="deleteByPrimaryKey">
     delete from t_flow
@@ -19,18 +20,36 @@
   </insert>
   <update id="updateByPrimaryKey" parameterType="com.xxl.job.core.biz.model.FlowEntity" >
     update t_flow
-    set job_id = #{jobId,jdbcType=INTEGER},
-      node_list = #{nodeList,jdbcType=LONGVARCHAR},
-      hop_list = #{hopList,jdbcType=LONGVARCHAR}
+    <set>
+      <if test="jobId != null and jobId != ''">
+        job_id = #{jobId,jdbcType=INTEGER},
+      </if>
+      <if test="nodeList != null and nodeList != ''">
+        node_list = #{nodeList,jdbcType=LONGVARCHAR},
+      </if>
+      <if test="hopList != null and hopList != ''">
+        hop_list = #{hopList,jdbcType=LONGVARCHAR},
+      </if>
+      <if test='countNum != null and countNum != "" or countNum==0 '>
+        count_num = #{countNum}
+      </if>
+    </set>
     where id = #{id,jdbcType=INTEGER}
   </update>
   <select id="selectByPrimaryKey" resultMap="BaseResultMap" >
-    select id, job_id, node_list, hop_list
+    select id, job_id, node_list, hop_list, count_num
     from t_flow
     where id = #{id,jdbcType=INTEGER}
   </select>
   <select id="selectAll" resultMap="BaseResultMap" >
-    select id, job_id, node_list, hop_list
+    select id, job_id, node_list, hop_list,count_num
     from t_flow
   </select>
+  <update id="decrease">
+    update t_flow
+    set
+      count_num = count_num-1
+    where id = #{id,jdbcType=INTEGER}
+    and count_num > 0
+  </update>
 </mapper>

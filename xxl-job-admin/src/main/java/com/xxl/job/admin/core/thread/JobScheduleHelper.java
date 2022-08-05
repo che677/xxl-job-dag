@@ -235,6 +235,7 @@ public class JobScheduleHelper {
                     try {
                         // second data
                         List<Integer> ringItemData = new ArrayList<>();
+                        // 获得当前的秒数
                         int nowSecond = Calendar.getInstance().get(Calendar.SECOND);
                         for (int i = 0; i < 2; i++) {
                             List<Integer> tmpData = ringData.remove( (nowSecond+60-i)%60 );

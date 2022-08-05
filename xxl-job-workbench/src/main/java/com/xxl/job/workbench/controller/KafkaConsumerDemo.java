@@ -19,8 +19,11 @@ public class KafkaConsumerDemo {
      */
     @KafkaListener(topics = "lose_topic")
     public void onMessageManualImmediate(ConsumerRecord<String,String> record, Acknowledgment ack){
-        System.out.println(record);
-        ack.acknowledge();//直接提交offset
+        try{
+            System.out.println(record);
+        }finally {
+            ack.acknowledge();//直接提交offset
+        }
     }
 
 }

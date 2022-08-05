@@ -431,9 +431,7 @@ public class XxlJobServiceImpl implements XxlJobService {
 		return new ReturnT<Map<String, Object>>(result);
 	}
 
-	public XxlJobInfo getByUnique(String flowId){
-		XxlJobInfo xxlJobInfo = xxlJobInfoDao.getJobsByFlowId(flowId);
-		return xxlJobInfo;
+	public XxlJobInfo loadById(int id){
+		return xxlJobInfoDao.loadById(id);
 	}
-
 }
