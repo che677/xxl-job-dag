@@ -26,8 +26,13 @@ public class DataServiceImpl implements DataService {
     @Autowired
     private MyThreadConfig myThreadConfig;
 
+    /**
+     * 1是多线程创建新链接，2是多线程使用旧连接，3是单线程
+     * 经过实际测试，发现1和2都没有显著提升传输速度
+     * @param type
+     */
     @Override
-    public void transData(int type) {
+    public void transData(int type, int start, int end) {
         DataSource source = dataSourceConfig.slave1DataSource();
         DataSource target = dataSourceConfig.slave2DataSource();
         Connection sConn = null;
@@ -36,6 +41,9 @@ public class DataServiceImpl implements DataService {
         Connection tConn = null;
         PreparedStatement preparedStatement = null;
         String querySql = "select * from goodtbl";
+        if(end>0){
+            querySql += " where id>="+start+" and id<="+end;
+        }
         String insertSql = "insert into goodtbl (id, gname, price,stock_number,create_time) values (?,?,?,?,?)";
         ThreadPoolExecutor threadPoolExecutor = myThreadConfig.threadPoolExecutor();
         try{
@@ -58,11 +66,12 @@ public class DataServiceImpl implements DataService {
             while(resultSet.next()){
                 Connection newConn = null;
                 PreparedStatement newPrep = null;
-                newConn = target.getConnection();
-                newPrep = tConn.prepareStatement(
-                            insertSql,
-                            ResultSet.TYPE_FORWARD_ONLY,  // 只能向前读取
-                            ResultSet.CONCUR_READ_ONLY);
+                // 在这里使用对target的新的连接，会出现连接问题
+//                newConn = target.getConnection();
+//                newPrep = tConn.prepareStatement(
+//                            insertSql,
+//                            ResultSet.TYPE_FORWARD_ONLY,  // 只能向前读取
+//                            ResultSet.CONCUR_READ_ONLY);
                 int columnCount = resultSet.getMetaData().getColumnCount();
                 for (int i = 1; i <= columnCount; ++i) {
                     if(type == 1){
@@ -84,8 +93,7 @@ public class DataServiceImpl implements DataService {
                 }
                 if (count % 5000 == 0 && count!=0) {
                     if(type == 1){
-                        threadPoolExecutor.execute(new DataTransThread(newPrep,
-                                newConn));
+                        threadPoolExecutor.execute(new DataTransThread(newPrep, newConn));
                         System.out.println("new Thread");
                     }else if(type == 2){
                         // 创建新线程，不创建新链接

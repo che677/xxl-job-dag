@@ -10,6 +10,7 @@ import com.xxl.job.core.dubbo.OrderService;
 import com.xxl.job.workbench.service.CategoryService;
 import com.xxl.job.workbench.service.DataService;
 import com.xxl.job.workbench.service.FlowService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.kafka.common.protocol.types.Field;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +42,8 @@ public class FlowController {
 
     @Autowired
     private DataService dataService;
+    @Autowired
+    private ThreadPoolExecutor executor;
 
     @GetMapping("/getflow")
     public ReturnT<String> chartInfo(Integer flowId) {
@@ -83,7 +86,18 @@ public class FlowController {
 
     @PostMapping("/transData")
     public ReturnT<String> transData(int type) throws InterruptedException {
-        dataService.transData(type);
+        System.out.println(System.currentTimeMillis());
+        // 1是单线程执行，2是通过线程池进行多线程并发执行
+        if(1==type){
+            dataService.transData(3, 0, 0);
+        }else{
+            executor.execute(new Thread(()->{
+                dataService.transData(3, 0, 90000);
+                dataService.transData(3, 90001, 180000);
+                dataService.transData(3, 180001, 250000);
+            }));
+        }
+        System.out.println(System.currentTimeMillis());
         return ReturnT.SUCCESS;
     }
 

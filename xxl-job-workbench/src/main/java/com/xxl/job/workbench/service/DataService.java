@@ -6,7 +6,7 @@ import java.util.Map;
 
 public interface DataService {
 
-    void transData(int type);
+    void transData(int type, int start, int end);
 
     void transMeta() throws SQLException;
 
