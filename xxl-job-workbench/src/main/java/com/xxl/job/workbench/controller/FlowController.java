@@ -7,6 +7,8 @@ import com.xxl.job.core.biz.model.FlowEntity;
 import com.xxl.job.core.biz.model.ReturnT;
 import com.xxl.job.core.dubbo.AccountService;
 import com.xxl.job.core.dubbo.OrderService;
+import com.xxl.job.dp.core.DtpExecutor;
+import com.xxl.job.dp.core.DtpRegistry;
 import com.xxl.job.workbench.service.CategoryService;
 import com.xxl.job.workbench.service.DataService;
 import com.xxl.job.workbench.service.FlowService;
@@ -150,6 +152,21 @@ public class FlowController {
             System.out.println("报错");
         }finally {
             thread.interrupt();
+        }
+    }
+
+    @PostMapping("/dp")
+    public void dp(){
+        DtpExecutor dtpExecutor = DtpRegistry.getDtpExecutor("dtpExecutor1");
+        System.out.println(dtpExecutor.getQueueCapacity());
+        for (int i=0;i<1000;i++){
+            dtpExecutor.execute(()-> {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            });
         }
     }
 

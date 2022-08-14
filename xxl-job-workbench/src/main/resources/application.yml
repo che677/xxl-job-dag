@@ -67,6 +67,42 @@ spring:
       missing-topics-fatal: false
       ack-mode: manual_immediate
       concurrency: 3
+  dynamic:
+    tp:
+      isRejectAlarm: true
+      enabled: true
+      enabledBanner: true           # 是否开启banner打印，默认true
+      enabledCollect: true          # 是否开启监控指标采集，默认false
+      collectorType: logging     # 监控数据采集器类型（jsonlog | micrometer），默认logging
+      logPath: /opt/           # 监控日志数据路径，默认 ${user.home}/logs，采集类型非jsonlog不用配置
+      monitorInterval: 5            # 监控时间间隔（报警判断、指标采集），默认5s
+      threshold: 90 # 监控触发的百分比
+      zookeeper:
+        zkConnectStr: master:2181,master:2182
+        configVersion:
+        rootNode: /configserver
+        node: dev
+        configKey:
+      configType: properties               # 配置文件类型，非cloud nacos 和 apollo需配置，其他不用配
+      executors:                                   # 动态线程池配置
+        - threadPoolName: dtpExecutor1
+          corePoolSize: 6
+          maximumPoolSize: 20
+          queueCapacity: 200
+          queueType: VariableLinkedBlockingQueue   # 任务队列，查看源码QueueTypeEnum枚举类
+          rejectedHandlerType: AbortPolicy    # 拒绝策略，查看RejectedTypeEnum枚举类
+          keepAliveTime: 50
+          allowCoreThreadTimeOut: false
+          threadNamePrefix: test1           # 线程名前缀
+        - threadPoolName: dtpExecutor2
+          corePoolSize: 6
+          maximumPoolSize: 15
+          queueCapacity: 1000
+          queueType: VariableLinkedBlockingQueue   # 任务队列，查看源码QueueTypeEnum枚举类
+          rejectedHandlerType: AbortPolicy    # 拒绝策略，查看RejectedTypeEnum枚举类
+          keepAliveTime: 50
+          allowCoreThreadTimeOut: false
+          threadNamePrefix: test2           # 线程名前缀
 dubbo:
   protocol:
     name: dubbo
@@ -77,3 +113,5 @@ dubbo:
     address: zookeeper://master:2181?backup=master:2181
   consumer:
     timeout: 1000
+  config-center:
+    address: zookeeper://master:2181?backup=master:2181
