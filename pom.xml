@@ -14,9 +14,6 @@
 		<module>xxl-job-core</module>
 		<module>xxl-job-admin</module>
 		<module>xxl-job-executor-samples</module>
-		<module>xxl-job-workbench</module>
-		<module>xxl-job-delay</module>
-        <module>xxl-job-dp</module>
     </modules>
 
 	<properties>

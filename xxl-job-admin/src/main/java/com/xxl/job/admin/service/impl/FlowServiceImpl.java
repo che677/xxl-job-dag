@@ -12,7 +12,6 @@ import com.xxl.job.admin.service.FlowService;
 import com.xxl.job.core.biz.model.FlowEntity;
 import com.xxl.job.core.biz.model.HopEntity;
 import com.xxl.job.core.util.beanutil.ListBeanUtils;
-import io.micrometer.core.instrument.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,26 +33,24 @@ public class FlowServiceImpl implements FlowService {
     @Resource
     private TaskSetMapper taskSetMapper;
 
-    public Integer addFlow(FlowEntity flowEntity){
-            return flowMapper.insert(flowEntity);
-    }
-
-    public Integer deleteFlow(Integer id){
-        return flowMapper.deleteByPrimaryKey(id);
-    }
-
-    public Integer updateFlow(FlowEntity flow){
-        return flowMapper.updateByPrimaryKey(flow);
-    }
-
-    public List<FlowEntity> queryAllFlow(){
-        return flowMapper.selectAll();
-    }
+//    public Integer addFlow(FlowEntity flowEntity){
+//            return flowMapper.insert(flowEntity);
+//    }
+//
+//    public Integer deleteFlow(Integer id){
+//        return flowMapper.deleteByPrimaryKey(id);
+//    }
+//
+//    public Integer updateFlow(FlowEntity flow){
+//        return flowMapper.updateByPrimaryKey(flow);
+//    }
+//
+//    public List<FlowEntity> queryAllFlow(){
+//        return flowMapper.selectAll();
+//    }
 
     /**
      * 按照工作流来执行flow
-     * @param flowId
-     * @return
      */
     @Override
     public List<TaskSet> executeFlow(int flowId){
@@ -71,9 +68,6 @@ public class FlowServiceImpl implements FlowService {
 
     /**
      * 将任务编排后落库
-     * @param flow
-     * @return
-     * @throws
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -83,14 +77,14 @@ public class FlowServiceImpl implements FlowService {
         List<XxlJobInfo> updates = new ArrayList<>();
         // DAG，可以通过拓扑排序得到层级关系分明的执行顺序，然后进行计算即可
         // 将节点放入map，方便根据id进行检索;
-        Map<Integer, XxlJobInfo> nodeMap = new HashMap();
-        flow.getNodeList().forEach(r ->{
-            nodeMap.put(r.getId(), r);
-        });
+        Map<Integer, XxlJobInfo> nodeMap = new HashMap<>();
+        flow.getNodeList().forEach(r ->
+            nodeMap.put(r.getId(), r)
+        );
         // 然后依据拓扑排序算法，生成执行顺序
         // 1、创建图算法的邻接表
         Map<Integer, List<Integer>> paths = new HashMap<>();
-        flow.getHopList().stream().forEach(r -> {
+        flow.getHopList().forEach(r -> {
             // 统计每个节点的入度,如果在target侧出现就加1
             nodeMap.get(r.getTargetId()).addInDegree(1);
             // 生成邻接表，如果不存在就新增，如果存在就加入新节点
@@ -126,7 +120,7 @@ public class FlowServiceImpl implements FlowService {
                 // 该节点指向的下一级节点的集合，每一个节点的入度都要减1;如果是最后一个节点，就不需要减1
                 List<Integer> targets = paths.get(nodeId);
                 if(!CollectionUtils.isEmpty(targets)){
-                    targets.stream().forEach(r -> {nodeMap.get(r).addInDegree(-1);});
+                    targets.forEach(r -> nodeMap.get(r).addInDegree(-1));
                 }
                 taskSet.addNode(node);
                 node.setTaskSetId(taskSet.getId());
@@ -157,8 +151,8 @@ public class FlowServiceImpl implements FlowService {
         // 任务执行完毕，将taskset集合落库
         try{
             taskSetMapper.deleteByFlowId(flow.getId());
-            int i = taskSetMapper.batchInsert(res);
-            int j = xxlJobInfoDao.updateTask(updates);
+            taskSetMapper.batchInsert(res);
+            xxlJobInfoDao.updateTask(updates);
         }catch (Exception e){
             e.printStackTrace();
 
