@@ -1,3 +1,5 @@
+本项目实现了xxl-job做DAG流程编排的功能
+
 DAG原理：拓扑排序
 回调机制：
     executor执行完毕之后，会调用callback函数，通过netty向admin服务上发送消息存储到queue中
